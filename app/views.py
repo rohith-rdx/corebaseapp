@@ -1,23 +1,55 @@
 import datetime
+from multiprocessing import managers
 from django.http import request
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from .models import *
 from datetime import datetime
 
 # Create your views here.
 def login(request):
-    return render(request, 'login.html')
-
-def home(request):
     if request.method =='POST':
-        if user_registration.objects.filter(email=request.POST['email'], password=request.POST['password']).exists():
+        
+        design=designation.objects.get(designation="team leader")
+        if user_registration.objects.filter(email=request.POST['email'], password=request.POST['password'],designation=design.id).exists():
             member=user_registration.objects.get(email=request.POST['email'], password=request.POST['password'])
             request.session['tlid'] = member.id
-            return render(request, 'TLsec.html', {'member':member})
+            if request.session.has_key('tlid'):
+                tlid = request.session['tlid']
+            else:
+                variable = "dummy"
+            mem = user_registration.objects.filter(id=tlid)
+            return render(request, 'TLdashboard.html', {'mem':mem})
+        des = designation.objects.get(designation='Developer')
+        if user_registration.objects.filter(email=request.POST['email'], password=request.POST['password'], designation=des.id).exists():
+            dev = user_registration.objects.get(email=request.POST['email'], password=request.POST['password'])
+            request.session['devid'] = dev.id
+            if request.session.has_key('devid'):
+                devid = request.session['devid']
+            else:
+                variable = "dummy"
+            dev = user_registration.objects.filter(id=devid)
+            return render(request, 'devdashboard.html', {'dev': dev})
+        design1=designation.objects.get(designation="project manager")
+        if user_registration.objects.filter(email=request.POST['email'], password=request.POST['password'],designation=design1.id).exists():
+            member=user_registration.objects.get(email=request.POST['email'], password=request.POST['password'])
+            request.session['prid'] = member.id
+            if request.session.has_key('prid'):
+                prid = request.session['prid']
+            else:
+                variable = "dummy"
+            pro = user_registration.objects.filter(id=prid)
+            return render(request, 'pmanager_dash.html', {'pro':pro})
         else:
             context={'msg':'Invalid uname or password'}
             return render(request,'login.html',context)
-            
+    return render(request, 'login.html')
+def TLlogout(request):
+    if 'tlid' in request.session:  
+        request.session.flush()
+        return redirect('/')
+    else:
+        return redirect('/')
+                      
 
 def devindex(request):
     return render(request,'devindex.html')  
@@ -98,20 +130,26 @@ def TSsucess(request):
 
 
 def tldashboard(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
- 
-    mem = user_registration.objects.filter(id=tlid)
-    return render(request, 'TLdashboard.html',{'mem':mem})
-    
-def tlprojects(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
-    
-    mem = user_registration.objects.filter(id=tlid)
-    display = project_taskassign.objects.filter(user_id=tlid)
-    return render(request, 'TLprojects.html',{'display':display,'mem':mem})
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        else:
+            variable="dummy"
+        mem = user_registration.objects.filter(id=tlid)
+        return render(request, 'TLdashboard.html',{'mem':mem})
+    else:
+        return redirect('/')
 
+def tlprojects(request):
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        
+        mem = user_registration.objects.filter(id=tlid)
+        display = project_taskassign.objects.filter(user_id=tlid)
+        return render(request, 'TLprojects.html',{'display':display,'mem':mem})
+    else:
+        return redirect('/')
 
 
 def tlprojecttasks(request):
@@ -167,70 +205,96 @@ def tlgivetask(request):
 
 
 def TLattendance(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
- 
-    mem = user_registration.objects.filter(id=tlid)
-    
-    return render(request, 'TLattendance.html',{'mem':mem})
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        else:
+            variable="dummy"
+        mem = user_registration.objects.filter(id=tlid)
+        return render(request, 'TLattendance.html',{'mem':mem})
+    else:
+        return redirect('/')
         
 def TLattendancesort(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
- 
-    mem = user_registration.objects.filter(id=tlid)
-    if request.method == "POST":
-        fromdate = request.POST.get('fromdate')
-        todate = request.POST.get('todate') 
-        mem1 = attendance.objects.raw('select id,date,status from app_attendance where date between "'+fromdate+'" and "'+todate+'"')
-        
-    return render(request, 'TLattendance.html',{'mem1':mem1,'mem':mem})
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        else:
+            variable="dummy"
+        mem = user_registration.objects.filter(id=tlid)
+        if request.method == "POST":
+            fromdate = request.POST.get('fromdate')
+            todate = request.POST.get('todate') 
+            # mem1 = attendance.objects.raw('select * from app_attendance where user_id and date between "'+fromdate+'" and "'+todate+'"')
+            mem1 = attendance.objects.filter(date__range=[fromdate, todate]).filter(user_id=tlid)
+        return render(request, 'TLattendancesort.html',{'mem1':mem1,'mem':mem})
+    else:
+        return redirect('/') 
     
 def TLreportissues(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
- 
-    mem = user_registration.objects.filter(id=tlid)
-    return render(request, 'TLreportissues.html',{'mem':mem})
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        else:
+            variable="dummy"
+        mem = user_registration.objects.filter(id=tlid)
+        return render(request, 'TLreportissues.html',{'mem':mem})
+    else:
+        return redirect('/')   
+
 def TLreportedissue1(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
- 
-    mem = user_registration.objects.filter(id=tlid)
-    var=reported_issue.objects.filter(reporter_id=tlid)
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        else:
+            variable="dummy"
+        mem = user_registration.objects.filter(id=tlid)
+        var=reported_issue.objects.filter(reporter_id=tlid)
+        return render(request, 'TLreportedissue1.html',{'mem':mem,'var':var})
+    else:
+        return redirect('/')   
 
-    return render(request, 'TLreportedissue1.html',{'mem':mem,'var':var})
-def TLreportedissue2(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
-    rid=request.GET.get('rid')
-    var=reported_issue.objects.filter(id=rid)
-    mem = user_registration.objects.filter(id=tlid)
-
-    return render(request, 'TLreportedissue2.html',{'mem':mem,'var':var})
+def TLreportedissue2(request,id):
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        else:
+            variable="dummy"
+        mem = user_registration.objects.filter(id=tlid)
+        var=reported_issue.objects.filter(id=id)
+        return render(request, 'TLreportedissue2.html',{'mem':mem,'var':var})
+    else:
+        return redirect('/')   
+   
 def TLreport1(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
-        
-    mem = user_registration.objects.filter(id=tlid)
-    return render(request, 'TLreport1.html',{'mem':mem})
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        else:
+            variable="dummy"    
+        mem = user_registration.objects.filter(id=tlid)
+        return render(request, 'TLreport1.html',{'mem':mem})
+    else:
+        return redirect('/')
+ 
 def TLreportsuccess(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
-    
-    mem = user_registration.objects.filter(id=tlid)
-    
-    if request.method == 'POST':
-        
-        vars = reported_issue()
-        vars.issue=request.POST.get('report')
-        vars.reported_date=datetime.now()
-        vars.reported_to_id=2
-        vars.reporter_id=tlid
-        vars.status='pending'
-        vars.save()
-    return render(request,'TLreportsuccess.html',{'mem':mem})
-
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        else:
+            variable="dummy"    
+        mem = user_registration.objects.filter(id=tlid)
+        if request.method == 'POST':
+            vars = reported_issue()
+            vars.issue=request.POST.get('report')
+            vars.reported_date=datetime.now()
+            vars.reported_to_id=3
+            vars.reporter_id=tlid
+            vars.status='pending'
+            vars.save()
+        return render(request, 'TLreportsuccess.html',{'mem':mem})
+    else:
+        return redirect('/')
 
 #***********************bibin*****************************
 
@@ -244,47 +308,58 @@ def TLtasks(request):
     mem = user_registration.objects.filter(id=tlid)
     return render(request, 'TLtasks.html',{'mem':mem})
 def TLleave(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
- 
-    mem = user_registration.objects.filter(id=tlid)
-    return render(request, 'TLleave.html',{'mem':mem})
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
     
-def TLleavereq(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
- 
+        mem = user_registration.objects.filter(id=tlid)
+        return render(request, 'TLleave.html',{'mem':mem})
     else:
-        tlid = "dummy"
-    mem = user_registration.objects.filter(id=tlid)
-    return render(request, 'TLleavereq.html',{'mem':mem,'var':vars})
+        return redirect('/')
+def TLleavereq(request):
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+    
+        else:
+            tlid = "dummy"
+        mem = user_registration.objects.filter(id=tlid)
+        return render(request, 'TLleavereq.html',{'mem':mem,'var':vars})
+    else:
+        return redirect('/')
 def tl_leave_form(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
- 
-    mem = user_registration.objects.filter(id=tlid)
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+    
+        mem = user_registration.objects.filter(id=tlid)
 
-    if request.method == "POST":
-        leaves = leave()
-        leaves.from_date = request.POST['from']
-        leaves.to_date = request.POST['to']
-        leaves.leave_status = request.POST['haful']
-        leaves.reason = request.POST['reason']
-        leaves.user_id = request.POST['tl_id']
-        leaves.status = "pending"
-        leaves.save()
-    return render(request, 'TLleavereq.html',{'mem':mem})
+        if request.method == "POST":
+            leaves = leave()
+            leaves.from_date = request.POST['from']
+            leaves.to_date = request.POST['to']
+            leaves.leave_status = request.POST['haful']
+            leaves.reason = request.POST['reason']
+            leaves.user_id = request.POST['tl_id']
+            leaves.status = "pending"
+            leaves.save()
+        return render(request, 'TLleavereq.html',{'mem':mem})
+    else:
+        return redirect('/')
     
     
     
 def TLreqedleave(request):
-    if request.session.has_key('tlid'):
-        tlid = request.session['tlid']
+    if 'tlid' in request.session:
+        if request.session.has_key('tlid'):
+            tlid = request.session['tlid']
+        else:
+            tlid = "dummy"
+        mem = user_registration.objects.filter(id=tlid)
+        var = leave.objects.all()
+        return render(request,'TLreqedleave.html', { 'mem':mem,'var': var})
     else:
-        tlid = "dummy"
-    mem = user_registration.objects.filter(id=tlid)
-    var = leave.objects.all()
-    return render(request,'TLreqedleave.html', {'var': var, 'mem':mem})
+        return redirect('/')
     
 def TLgivetasks(request):
     return render(request, 'TLgivetasks.html')
@@ -300,6 +375,11 @@ def promanagerindex(request):
     return render(request, 'promanagerindex.html')
 
 def pmanager_dash(request):
+    if request.session.has_key('pmid'):
+        pmid = request.session['pmid']
+ 
+    mem = user_registration.objects.filter(id=pmid)
+    return render(request, 'pmanager_dash.html',{'mem':mem})
     return render(request, 'pmanager_dash.html')
 
 def projectmanager_projects(request):
@@ -377,13 +457,49 @@ def MANreportsuccess(request):
     return render(request, 'MANreportsuccess.html')
 
 def projectMANleave(request):
-    return render(request, 'projectMANleave.html')
+    if request.session.has_key('pmid'):
+        pmid = request.session['pmid']
+ 
+    mem = user_registration.objects.filter(id=pmid)
+    return render(request, 'projectMANleave.html',{'mem':mem})
+    # return render(request, 'projectMANleave.html')
 
 def projectMANleavereq(request):
-    return render(request, 'projectMANleavereq.html')
+    if request.session.has_key('pmid'):
+        pmid = request.session['pmid']
+ 
+    else:
+        tlid = "dummy"
+    mem = user_registration.objects.filter(id=pmid)
+    return render(request, 'projectMANleavereq.html',{'mem':mem,'var':vars})
+    # return render(request, 'projectMANleavereq.html')
+def pm_leave_form(request):
+    if request.session.has_key('pmid'):
+        pmid = request.session['pmid']
+ 
+    mem = user_registration.objects.filter(id=pmid)
 
+    if request.method == "POST":
+        leaves = leave()
+        leaves.from_date = request.POST['from']
+        leaves.to_date = request.POST['to']
+        leaves.leave_status = request.POST['haful']
+        leaves.reason = request.POST['reason']
+        leaves.user_id = request.POST['pm_id']
+        leaves.status = "pending"
+        leaves.save()
+    return render(request, 'projectMANleavereq.html',{'mem':mem})
+    
 def projectMANreqedleave(request):
-    return render(request, 'projectMANreqedleave.html') 
+    if request.session.has_key('pmid'):
+        pmid = request.session['pmid']
+    else:
+        tlid = "dummy"
+    mem = user_registration.objects.filter(id=pmid)
+    var = leave.objects.filter(user_id=pmid)
+    return render(request,'projectMANreqedleave.html', { 'mem':mem,'var': var})
+    
+    # return render(request, 'projectMANreqedleave.html') 
 
 def Manager_employees(request):
     return render(request,'Manager_employees.html')

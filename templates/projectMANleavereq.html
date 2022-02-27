@@ -75,9 +75,11 @@
     <div id="firstbox" class="row shadow p-3" style="background-color: #191c24;">
       <div class="col-md-12 ">
 
-        <form method="POST" action="#" enctype="multipart/form-data" id="myForm">
+        <form method="POST" action="pm_leave_form" enctype="multipart/form-data" id="myForm" >
           {% csrf_token %}
-    
+          {% for d in mem %}
+          <input type="hidden" name="pm_id" value="{{d.id}}">
+          {% endfor %}
 
            
             <div class="row">
@@ -111,7 +113,7 @@
 
               <div class="col-md-4 offset-5">
                
-                <button type="button" class="btn btn-outline-primary btn-icon-text">
+                <button type="submit" class="btn btn-outline-primary btn-icon-text">
                   <i class="mdi mdi-file-check btn-icon-prepend"></i> Submit </button>
               </div>
         </form>

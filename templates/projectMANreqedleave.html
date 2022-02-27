@@ -91,29 +91,26 @@
               </thead>
               <tbody id="myTable">
   
-                <tr >
+                {% for d in var %}
+                <tr>
                   
-                    <td>1</td>
+                    <td>{{d.id}}</td>
                     
-                    <td> 5/5/2022 </td>
-                    <td> 10/5/2022</td>
-                    <td>hospital</td>
+                    <td> {{d.from_date}} </td>
+                    <td> {{d.to_date}}</td>
+                    <td>{{d.reason}}</td>
                     <td><a href="">
-                      <div class="badge badge-outline-warning">Pending</div></a>
+                      {% if d.status == "pending" %}
+                          <div class="badge badge-outline-primary">pending</div>
+                          {% elif d.status == "approved" %}
+                          <div class="badge badge-outline-success">approved</div>
+                          {% elif d.status == "rejected" %}
+                          <div class="badge badge-outline-danger">rejected</div>
+                        {% endif %}
                     </td>
                   
                 </tr>
-  
-                <tr>
-                  <td> 2 </td>
-                
-                  <td> 6/5/2022 </td>
-                  <td> 10/5/2022</td>
-                  <td>casual</td>
-                  <td><a href="">
-                    <div class="badge badge-outline-success">Approved</div></a>
-                  </td>
-                <tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>

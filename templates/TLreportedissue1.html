@@ -74,14 +74,31 @@
                 <tr>
                   
                     <td>{{d.id}}</td>
-                    {% for j in mem %}
-                    <td> {{j.fullname}}</td>
-                    <td> {{j.designation}}</td>
-                    {% endfor %}
+                    <td> {{d.reporter.fullname}}</td>
+                    <td> {{d.reporter.designation}}</td>
                     <td> {{d.reported_date}}</td>
-                    <td><a href="TLreportedissue2?rid={{d.id}}">
-                      <div class="badge badge-outline-success">Submitted</div></a>
-                    </td>
+                    <td>
+                      {% if not d.reply %}
+                      <a href="#">
+                      <div class="btn btn-outline-warning" data-toggle="modal" >
+                          <i class=" text-warning mdi mdi-send btn-icon-prepend"></i>Pending
+                      </div>
+
+                      </a>
+                      {% else %}
+                      
+                      
+                      <a href="{% url 'TLreportedissue2' d.id %}">
+                          <div class="badge badge-outline-success">Submitted</div>
+                      </a>
+                      {% endif %}
+                      
+                      
+                      
+                      
+                      
+                      
+                  </td>
                   
                 </tr>
   

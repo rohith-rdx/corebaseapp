@@ -4,7 +4,7 @@ from .import views
 
 urlpatterns = [
     re_path(r'^$', views.login, name="login"),
-    re_path(r'^home$', views.home, name='home'),
+    re_path(r'^TLlogout/$', views.TLlogout, name='TLlogout'),
     re_path(r'^devindex$', views.devindex, name='devindex'),
     re_path(r'^devdashboard$', views.devdashboard, name='devdashboard'),
     re_path(r'^devReportedissues$', views.devReportedissues, name='devReportedissues'),
@@ -57,7 +57,7 @@ urlpatterns = [
     re_path(r'^TLattendancesort$', views.TLattendancesort, name='TLattendancesort'),
     re_path(r'^TLreportissues$', views.TLreportissues, name='TLreportissues'),
     re_path(r'^TLreportedissue1$', views.TLreportedissue1, name='TLreportedissue1'),
-    re_path(r'^TLreportedissue2$', views.TLreportedissue2, name='TLreportedissue2'),
+    re_path(r'^TLreportedissue2/(?P<id>\d+)/$', views.TLreportedissue2, name='TLreportedissue2'),
     re_path(r'^TLreport1$', views.TLreport1, name='TLreport1'),
     re_path(r'^TLreportsuccess$', views.TLreportsuccess, name='TLreportsuccess'),
     # bibn
@@ -112,6 +112,7 @@ urlpatterns = [
     re_path(r'^MANreportsuccess$', views.MANreportsuccess, name='MANreportsuccess'),
     re_path(r'^projectMANleave$', views.projectMANleave, name='projectMANleave'),
     re_path(r'^projectMANleavereq$', views.projectMANleavereq, name='projectMANleavereq'),
+    re_path(r'^pm_leave_form$', views.pm_leave_form, name='pm_leave_form'),
     re_path(r'^projectMANreqedleave$', views.projectMANreqedleave, name='projectMANreqedleave'),
 
     re_path(r'^Manager_employees$', views.Manager_employees, name='Manager_employees'),
